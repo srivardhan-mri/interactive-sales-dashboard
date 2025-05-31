@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Sales Dashboard</title>
+    
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SalesDash">
+    <!-- Add links to actual icon files here if you have them, e.g., <link rel="apple-touch-icon" href="/icons/icon-192x192.png"> -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              sky: {
+                400: '#38bdf8', // Brighter for text highlights, icons
+                500: '#0ea5e9', // Original primary accent
+                600: '#0284c7', // Primary for interactive elements (buttons)
+                700: '#0369a1', // Hover state for sky-600 elements
+              },
+              slate: {
+                50: '#f8fafc',  // Very light text (e.g., Kpi value)
+                100: '#f1f5f9', // Primary light text
+                200: '#e2e8f0', // Default body text, secondary light text
+                300: '#cbd5e1', // Labels, less prominent text
+                400: '#94a3b8', // Muted text (placeholders, help text)
+                500: '#64748b', // Borders for interactive elements (non-focus)
+                600: '#475569', // Darker borders, disabled elements
+                700: '#334155', // Input backgrounds, hover for darker panels
+                750: '#26344b', // Subtle borders, secondary backgrounds for panels
+                800: '#1e293b', // Standard panel/card background
+                850: '#172033', // Darker panel/header background
+                900: '#0f172a', // Main body background
+              },
+              rose: { // For destructive actions
+                500: '#f43f5e',
+                600: '#e11d48',
+                700: '#be123c',
+              }
+            },
+            borderRadius: {
+              'lg': '0.5rem', // Default for cards/panels
+              'md': '0.375rem', // Default for inputs/buttons
+            }
+          }
+        }
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "react": "https://esm.sh/react@^19.1.0",
+    "recharts": "https://esm.sh/recharts@^2.15.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "xlsx": "https://esm.sh/xlsx@^0.18.5"
+  }
+}
+</script>
+</head>
+  <body class="bg-slate-900 text-slate-200 antialiased">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            })
+            .catch(error => {
+              console.log('ServiceWorker registration failed: ', error);
+            });
+        });
+      }
+    </script>
+  </body>
+</html><link rel="stylesheet" href="index.css">
+<script src="index.tsx" type="module"></script>

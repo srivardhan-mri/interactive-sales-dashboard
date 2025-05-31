@@ -1,0 +1,6 @@
+{
+  "name": "Interactive Sales Dashboard",
+  "description": "A web application to visualize and filter sales data, providing insights through interactive charts and a data grid.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
