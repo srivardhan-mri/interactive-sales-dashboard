@@ -529,6 +529,8 @@ const App: React.FC = () => {
         return <BrokerAnalysisDashboard 
                   allData={allData} 
                   availableBrokerNames={availableBrokerNamesFromAllData} 
+                  availableFiscalYears={fiscalYearsFromAllData}
+                  allFiscalYearsOption={ALL_FISCAL_YEARS_OPTION}
                   quantityFormatter={quantityFormatter}
                   currencyFormatter={currencyFormatter}
                 />;
@@ -536,6 +538,8 @@ const App: React.FC = () => {
         return <StateAnalysisDashboard 
                   allData={allData}
                   availableStates={availableStatesForFilterPanel} 
+                  availableFiscalYears={fiscalYearsFromAllData}
+                  allFiscalYearsOption={ALL_FISCAL_YEARS_OPTION}
                   quantityFormatter={quantityFormatter}
                   currencyFormatter={currencyFormatter}
                 />;

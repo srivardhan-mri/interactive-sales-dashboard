@@ -62,7 +62,8 @@ const BarChartComponent: React.FC<BarChartComponentProps> = ({
   const tooltipStyle = {
     contentStyle: { backgroundColor: 'rgba(30, 41, 59, 0.95)', border: '1px solid #26344b', borderRadius: '0.375rem' }, // slate-800, slate-750 border
     labelStyle: { color: '#e2e8f0', fontWeight: '600' }, // slate-200
-    itemStyle: { color: '#cbd5e1' } // slate-300
+    itemStyle: { color: '#cbd5e1' }, // slate-300
+    wrapperStyle: layout === 'horizontal' ? { transform: 'translateY(8px)' } : {} // Adjust Y to shift tooltip down for horizontal bars
   };
 
   const legendStyle = { color: '#cbd5e1', paddingTop: '15px' }; // slate-300
@@ -116,6 +117,7 @@ const BarChartComponent: React.FC<BarChartComponentProps> = ({
               contentStyle={tooltipStyle.contentStyle}
               labelStyle={tooltipStyle.labelStyle}
               itemStyle={tooltipStyle.itemStyle}
+              wrapperStyle={tooltipStyle.wrapperStyle}
               formatter={tooltipItemFormatter}
               labelFormatter={tooltipLabelFormatter}
               cursor={{ fill: 'rgba(71, 85, 105, 0.3)' }} // slate-600 with opacity

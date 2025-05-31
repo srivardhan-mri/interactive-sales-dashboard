@@ -1,10 +1,12 @@
-import React, { useState, useMemo } from 'react';
+
+import React, { useState, useMemo, useEffect } from 'react';
 import { DataRecord, ChartDataPoint } from '../types';
 import MultiSelectDropdown from './MultiSelectDropdown';
 import ChartCard from './ChartCard';
 import BarChartComponent from './BarChartComponent';
 import KpiCard from './KpiCard';
 import NoData from './NoData';
+import ChevronDownIcon from './icons/ChevronDownIcon';
 
 interface IconProps {
   className?: string;
@@ -39,7 +41,9 @@ const AmountIcon: React.FC<IconProps> = ({ className }) => (
 
 interface StateAnalysisDashboardProps {
   allData: DataRecord[];
-  availableStates: string[]; // Should not include "All"
+  availableStates: string[];
+  availableFiscalYears: string[];
+  allFiscalYearsOption: string;
   quantityFormatter: (value: number) => string;
   currencyFormatter: (value: number) => string;
 }
@@ -47,15 +51,29 @@ interface StateAnalysisDashboardProps {
 const StateAnalysisDashboard: React.FC<StateAnalysisDashboardProps> = ({
   allData,
   availableStates,
+  availableFiscalYears,
+  allFiscalYearsOption,
   quantityFormatter,
   currencyFormatter,
 }) => {
   const [selectedStates, setSelectedStates] = useState<string[]>([]);
+  const [selectedFiscalYear, setSelectedFiscalYear] = useState<string>(allFiscalYearsOption);
+
+  useEffect(() => {
+    if (selectedFiscalYear !== allFiscalYearsOption && !availableFiscalYears.includes(selectedFiscalYear)) {
+        setSelectedFiscalYear(allFiscalYearsOption);
+    }
+  }, [availableFiscalYears, selectedFiscalYear, allFiscalYearsOption]);
 
   const stateFilteredData = useMemo(() => {
     if (selectedStates.length === 0) return [];
-    return allData.filter(record => selectedStates.includes(record.state));
-  }, [allData, selectedStates]);
+    let filtered = allData.filter(record => selectedStates.includes(record.state));
+
+    if (selectedFiscalYear !== allFiscalYearsOption) {
+      filtered = filtered.filter(record => record.fiscalYear === selectedFiscalYear);
+    }
+    return filtered;
+  }, [allData, selectedStates, selectedFiscalYear, allFiscalYearsOption]);
 
   const totalQuintals = useMemo(() => {
     return stateFilteredData.reduce((sum, record) => sum + (Number(record.totalQty) || 0), 0);
@@ -103,19 +121,52 @@ const StateAnalysisDashboard: React.FC<StateAnalysisDashboardProps> = ({
       .sort((a,b) => b.value - a.value)
       .slice(0, 15);
   }, [stateFilteredData]);
+  
+  const commonSelectClasses = "w-full pl-3 pr-10 py-2 text-base border border-slate-600 bg-slate-700 text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 sm:text-sm rounded-md appearance-none";
+
+  const fySuffix = selectedFiscalYear === allFiscalYearsOption ? "" : ` (${selectedFiscalYear})`;
+  const dashboardTitle = `State-wise Sales Analysis${fySuffix}`;
+  const stateSelectionTitle = selectedStates.join(', ').substring(0,50) + (selectedStates.join(', ').length > 50 ? '...' : '');
+
 
   return (
     <div className="space-y-6">
       <div className="bg-slate-800 p-4 sm:p-6 rounded-lg shadow-xl">
-        <h2 className="text-xl font-semibold text-slate-100 mb-4">State-wise Sales Analysis</h2>
-        <MultiSelectDropdown
-          id="state-select"
-          label="Select State(s) to Analyze:"
-          options={availableStates}
-          selectedOptions={selectedStates}
-          onChange={setSelectedStates}
-          height="h-48"
-        />
+        <h2 className="text-xl font-semibold text-slate-100 mb-4">{dashboardTitle}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+            <MultiSelectDropdown
+              id="state-select"
+              label="Select State(s) to Analyze:"
+              options={availableStates}
+              selectedOptions={selectedStates}
+              onChange={setSelectedStates}
+              height="h-48"
+            />
+            <div className="relative">
+                <label htmlFor="state-fiscal-year-filter" className="block text-sm font-medium text-slate-300 mb-1">
+                    Filter by Fiscal Year:
+                </label>
+                <select
+                    id="state-fiscal-year-filter"
+                    value={selectedFiscalYear}
+                    onChange={(e) => setSelectedFiscalYear(e.target.value)}
+                    className={commonSelectClasses}
+                    aria-label="Filter by fiscal year for state analysis"
+                    disabled={availableFiscalYears.length === 0 && selectedFiscalYear === allFiscalYearsOption}
+                >
+                    <option value={allFiscalYearsOption}>{allFiscalYearsOption}</option>
+                    {availableFiscalYears.map((fy) => ( 
+                    <option key={fy} value={fy}>
+                        {fy}
+                    </option>
+                    ))}
+                </select>
+                <ChevronDownIcon className="absolute right-3 top-9 text-slate-400 pointer-events-none h-5 w-5" />
+                {availableFiscalYears.length === 0 && selectedFiscalYear === allFiscalYearsOption && (
+                    <p className="mt-1 text-xs text-slate-400">No specific fiscal years available in current data.</p>
+                )}
+            </div>
+        </div>
       </div>
       
       {selectedStates.length === 0 && (
@@ -126,19 +177,19 @@ const StateAnalysisDashboard: React.FC<StateAnalysisDashboardProps> = ({
 
       {selectedStates.length > 0 && stateFilteredData.length === 0 && (
         <div className="bg-slate-800 p-6 rounded-lg shadow-xl text-center">
-          <NoData message={`No data found for selected state(s): ${selectedStates.join(', ')}.`} />
+          <NoData message={`No data found for selected state(s): ${stateSelectionTitle}${fySuffix}.`} />
         </div>
       )}
 
       {selectedStates.length > 0 && stateFilteredData.length > 0 && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            <KpiCard title="Total Quintals Sold in State(s)" value={quantityFormatter(totalQuintals)} icon={<SalesIcon />} />
-            <KpiCard title="Total Order Value in State(s)" value={currencyFormatter(totalOrderAmount)} icon={<AmountIcon />} />
+            <KpiCard title={`Total Quintals Sold in State(s)${fySuffix}`} value={quantityFormatter(totalQuintals)} icon={<SalesIcon />} />
+            <KpiCard title={`Total Order Value in State(s)${fySuffix}`} value={currencyFormatter(totalOrderAmount)} icon={<AmountIcon />} />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            <ChartCard title={`Sales by City in: ${selectedStates.join(', ').substring(0,50)}${selectedStates.join(', ').length > 50 ? '...' : ''} (Top 15)`}>
+            <ChartCard title={`Sales by City in: ${stateSelectionTitle}${fySuffix} (Top 15)`}>
               <BarChartComponent 
                 data={salesByCityData} 
                 dataKey="value" 
@@ -149,7 +200,7 @@ const StateAnalysisDashboard: React.FC<StateAnalysisDashboardProps> = ({
                 truncateLabelLength={10}
               />
             </ChartCard>
-            <ChartCard title={`Sales by Broker in: ${selectedStates.join(', ').substring(0,50)}${selectedStates.join(', ').length > 50 ? '...' : ''} (Top 15)`}>
+            <ChartCard title={`Sales by Broker in: ${stateSelectionTitle}${fySuffix} (Top 15)`}>
               <BarChartComponent 
                 data={salesByBrokerData} 
                 dataKey="value" 
@@ -160,7 +211,7 @@ const StateAnalysisDashboard: React.FC<StateAnalysisDashboardProps> = ({
                 truncateLabelLength={10}
               />
             </ChartCard>
-            <ChartCard title={`Sales by District in: ${selectedStates.join(', ').substring(0,50)}${selectedStates.join(', ').length > 50 ? '...' : ''} (Top 15)`}>
+            <ChartCard title={`Sales by District in: ${stateSelectionTitle}${fySuffix} (Top 15)`}>
               <BarChartComponent 
                 data={salesByDistrictData} 
                 dataKey="value" 
